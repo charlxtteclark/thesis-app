@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Thesis — Think Deeper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f4;
+      --bg-tertiary: #f0efeb;
+      --text-primary: #1a1a1a;
+      --text-secondary: #6b6b6b;
+      --text-tertiary: #9e9e9e;
+      --border: rgba(0,0,0,0.1);
+      --brand: #1a1a2e;
+      --accent: #f9c74f;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #1c1c1e;
+        --bg-secondary: #2c2c2e;
+        --bg-tertiary: #3a3a3c;
+        --text-primary: #f5f5f5;
+        --text-secondary: #ababab;
+        --text-tertiary: #6e6e6e;
+        --border: rgba(255,255,255,0.1);
+      }
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-tertiary);
+      overflow: hidden;
+    }
+
+    /* Full-screen on mobile, phone frame on desktop */
+    .app-shell {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background: var(--bg-tertiary);
+    }
+
+    .app {
+      background: var(--bg-primary);
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* On desktop, show as phone frame */
+    @media (min-width: 600px) {
+      .app-shell { align-items: center; padding: 24px 0; }
+      .app {
+        max-width: 390px;
+        height: 844px;
+        border-radius: 44px;
+        border: 0.5px solid var(--border);
+        box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+      }
+    }
+
+    .screen { display: none; flex-direction: column; flex: 1; min-height: 0; }
+    .screen.active { display: flex; }
+
+    /* STATUS BAR — mobile only */
+    .status-bar {
+      display: flex; justify-content: space-between;
+      padding: env(safe-area-inset-top, 12px) 20px 4px;
+      font-size: 12px; font-weight: 600; color: var(--text-tertiary);
+      flex-shrink: 0;
+    }
+    @media (min-width: 600px) {
+      .status-bar { padding-top: 16px; }
+    }
+
+    /* ONBOARDING */
+    .onboard-hero {
+      flex: 1; display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      padding: 32px 28px; text-align: center; overflow-y: auto;
+    }
+    .logo-mark {
+      width: 72px; height: 72px; border-radius: 20px;
+      background: #1a1a2e; display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px; flex-shrink: 0;
+    }
+    .logo-mark svg { width: 40px; height: 40px; }
+    .app-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 34px; color: var(--text-primary);
+      letter-spacing: -0.5px; margin-bottom: 8px;
+    }
+    .app-tagline {
+      font-size: 15px; color: var(--text-secondary);
+      line-height: 1.55; margin-bottom: 36px; max-width: 280px;
+    }
+    .goal-prompt {
+      font-size: 14px; font-weight: 500; color: var(--text-secondary);
+      margin-bottom: 12px; align-self: flex-start;
+    }
+    .goal-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+      width: 100%; margin-bottom: 24px;
+    }
+    .goal-chip {
+      border: 0.5px solid var(--border); border-radius: 10px; padding: 10px 12px;
+      font-size: 13px; color: var(--text-secondary); cursor: pointer;
+      text-align: left; background: var(--bg-primary);
+      transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+    }
+    .goal-chip.selected { border-color: #1a1a2e; background: #1a1a2e; color: #fff; }
+    .goal-chip .chip-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+
+    .btn-primary {
+      width: 100%; padding: 14px; border-radius: 12px;
+      background: #1a1a2e; color: #fff; border: none;
+      font-size: 15px; font-weight: 500; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* FEED */
+    .feed-header {
+      padding: 14px 20px 12px; border-bottom: 0.5px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .feed-logo { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text-primary); }
+    .streak-badge {
+      display: flex; align-items: center; gap: 4px;
+      background: #fff8e1; border: 0.5px solid #f9c74f;
+      border-radius: 20px; padding: 4px 10px;
+      font-size: 12px; font-weight: 600; color: #7c5a00;
+    }
+    .feed-scroll { flex: 1; overflow-y: auto; }
+    .feed-scroll::-webkit-scrollbar { display: none; }
+
+    .article-card {
+      border-bottom: 0.5px solid var(--border); padding: 16px 20px;
+      cursor: pointer; transition: background 0.1s;
+    }
+    .article-card:active { background: var(--bg-secondary); }
+    .article-source {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 600; color: var(--text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+    }
+    .source-dot { width: 6px; height: 6px; border-radius: 50%; background: #1a1a2e; flex-shrink: 0; }
+    .article-headline { font-size: 15px; font-weight: 500; color: var(--text-primary); line-height: 1.45; margin-bottom: 6px; }
+    .article-meta { font-size: 12px; color: var(--text-tertiary); display: flex; gap: 8px; align-items: center; }
+    .article-tag { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; background: #e8f4fd; color: #1565c0; }
+    .article-tag.opinion { background: #fce4ec; color: #880e4f; }
+    .article-tag.analysis { background: #f3e5f5; color: #4a148c; }
+
+    .quiz-trigger-bar {
+      margin: 16px 20px; background: #1a1a2e; border-radius: 12px; padding: 14px 16px;
+      display: flex; align-items: center; gap: 10px; cursor: pointer;
+    }
+    .quiz-ping { width: 8px; height: 8px; border-radius: 50%; background: #f9c74f; flex-shrink: 0; }
+    .quiz-trigger-text { font-size: 13px; color: #fff; flex: 1; }
+    .quiz-trigger-cta { font-size: 12px; font-weight: 600; color: #f9c74f; }
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+      border-top: 0.5px solid var(--border);
+      display: flex; background: var(--bg-primary); flex-shrink: 0;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .nav-item {
+      flex: 1; padding: 10px 0 12px; display: flex; flex-direction: column;
+      align-items: center; gap: 3px; cursor: pointer;
+      font-size: 10px; color: var(--text-tertiary);
+      border: none; background: none; font-family: 'DM Sans', sans-serif;
+      transition: color 0.15s;
+    }
+    .nav-item.active { color: #1a1a2e; }
+    .nav-item i { font-size: 20px; }
+
+    /* ARTICLE READER */
+    .reader-header {
+      padding: 14px 20px; border-bottom: 0.5px solid var(--border);
+      display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+    }
+    .back-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-secondary); font-size: 22px;
+      display: flex; align-items: center; padding: 0; line-height: 1;
+    }
+    .reader-scroll { flex: 1; overflow-y: auto; padding: 24px 20px 100px; }
+    .reader-scroll::-webkit-scrollbar { display: none; }
+    .reader-source {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 600; color: var(--text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
+    }
+    .reader-headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: 24px; color: var(--text-primary); line-height: 1.3; margin-bottom: 12px;
+    }
+    .reader-byline {
+      font-size: 12px; color: var(--text-tertiary);
+      margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    }
+    .reader-divider { height: 0.5px; background: var(--border); margin: 16px 0; }
+    .reader-body { font-size: 15px; line-height: 1.78; color: var(--text-primary); }
+    .reader-body p { margin-bottom: 16px; }
+    .reader-body p:last-child { margin-bottom: 0; }
+    .thesis-note {
+      margin: 24px 0 0; padding: 14px 16px;
+      border-left: 3px solid #1a1a2e; background: var(--bg-secondary);
+      border-radius: 0 8px 8px 0;
+      font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+    }
+    .thesis-note-label {
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.8px; color: #1a1a2e; margin-bottom: 6px;
+    }
+    .read-done-bar {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 12px 20px; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
+      background: var(--bg-primary); border-top: 0.5px solid var(--border);
+    }
+
+    /* QUIZ */
+    .quiz-header {
+      padding: 14px 20px; border-bottom: 0.5px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .quiz-progress-track {
+      flex: 1; height: 3px; background: var(--bg-secondary);
+      border-radius: 2px; margin: 0 16px; overflow: hidden;
+    }
+    .quiz-progress-fill { height: 100%; background: #1a1a2e; border-radius: 2px; transition: width 0.4s ease; width: 33%; }
+    .quiz-body { flex: 1; padding: 28px 20px; display: flex; flex-direction: column; overflow-y: auto; }
+    .quiz-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+    .quiz-q { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text-primary); line-height: 1.3; margin-bottom: 28px; }
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+    .quiz-option {
+      padding: 14px 16px; border-radius: 12px; border: 0.5px solid var(--border);
+      font-size: 14px; color: var(--text-primary); cursor: pointer; background: var(--bg-primary);
+      text-align: left; font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .quiz-option:hover { border-color: #1a1a2e; }
+    .quiz-option.correct { background: #e8f5e9; border-color: #43a047; color: #1b5e20; }
+    .quiz-option.wrong { background: #ffebee; border-color: #e53935; color: #b71c1c; }
+    .quiz-option.reveal { background: #e8f5e9; border-color: #43a047; color: #1b5e20; }
+    .opt-letter {
+      width: 24px; height: 24px; border-radius: 6px; background: var(--bg-secondary);
+      font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: var(--text-secondary);
+    }
+    .quiz-feedback {
+      margin-top: 16px; padding: 14px 16px; border-radius: 12px;
+      background: var(--bg-secondary); font-size: 13px; line-height: 1.55;
+      color: var(--text-secondary); display: none;
+    }
+    .quiz-feedback.show { display: block; }
+    .quiz-footer { padding: 0 20px 28px; padding-bottom: calc(28px + env(safe-area-inset-bottom, 0)); flex-shrink: 0; }
+
+    /* THOUGHT PARTNER */
+    .tp-header {
+      padding: 14px 20px; border-bottom: 0.5px solid var(--border);
+      display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+    }
+    .tp-avatar {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: #1a1a2e; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .tp-avatar svg { width: 20px; height: 20px; }
+    .tp-name { font-weight: 600; font-size: 14px; color: var(--text-primary); }
+    .tp-role { font-size: 12px; color: var(--text-tertiary); }
+    .tp-messages { flex: 1; padding: 16px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    .tp-messages::-webkit-scrollbar { display: none; }
+    .msg { max-width: 85%; }
+    .msg.ai { align-self: flex-start; }
+    .msg.user { align-self: flex-end; }
+    .msg-bubble { padding: 12px 14px; border-radius: 16px; font-size: 14px; line-height: 1.55; }
+    .msg.ai .msg-bubble { background: var(--bg-secondary); color: var(--text-primary); border-bottom-left-radius: 4px; }
+    .msg.user .msg-bubble { background: #1a1a2e; color: #fff; border-bottom-right-radius: 4px; }
+    .typing-dots { display: flex; gap: 4px; padding: 4px 0; }
+    .typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-tertiary); animation: blink 1.2s infinite; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+    .tp-input-row {
+      padding: 10px 16px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
+      border-top: 0.5px solid var(--border); display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0;
+    }
+    .tp-input {
+      flex: 1; border: 0.5px solid var(--border); border-radius: 10px; padding: 10px 12px;
+      font-size: 14px; font-family: 'DM Sans', sans-serif;
+      background: var(--bg-primary); color: var(--text-primary); resize: none; max-height: 80px; min-height: 40px;
+    }
+    .tp-input:focus { outline: none; border-color: #1a1a2e; }
+    .tp-send {
+      width: 38px; height: 38px; border-radius: 10px; background: #1a1a2e;
+      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .tp-send svg { width: 16px; height: 16px; }
+
+    /* PROGRESS SCREEN */
+    .page-header {
+      padding: 16px 20px 14px; border-bottom: 0.5px solid var(--border); flex-shrink: 0;
+      font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text-primary);
+    }
+    .page-scroll { flex: 1; overflow-y: auto; padding: 20px 20px 80px; }
+    .page-scroll::-webkit-scrollbar { display: none; }
+    .section-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+    .metric-card { background: var(--bg-secondary); border-radius: 12px; padding: 14px 16px; }
+    .metric-val { font-size: 26px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .metric-lbl { font-size: 12px; color: var(--text-tertiary); }
+    .metric-change { font-size: 12px; color: #43a047; margin-top: 2px; }
+    .mrs-card { background: #1a1a2e; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+    .mrs-card-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+    .mrs-card-score { font-size: 36px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .mrs-card-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+    .mrs-track { height: 6px; background: rgba(255,255,255,0.15); border-radius: 3px; overflow: hidden; }
+    .mrs-fill-anim { height: 100%; border-radius: 3px; background: #f9c74f; width: 42%; }
+    .bias-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+    .bias-item { background: var(--bg-secondary); border-radius: 10px; padding: 12px 14px; }
+    .bias-item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .bias-item-label { font-size: 13px; color: var(--text-primary); }
+    .bias-item-val { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+    .bias-bar-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .bias-bar-fill { height: 100%; border-radius: 2px; background: #1a1a2e; }
+    .streak-row { display: flex; gap: 6px; }
+    .streak-day {
+      flex: 1; aspect-ratio: 1; border-radius: 8px; background: var(--bg-secondary);
+      display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--text-tertiary);
+    }
+    .streak-day.done { background: #1a1a2e; color: #f9c74f; font-size: 14px; }
+    .streak-day.today { background: #1a1a2e; color: #fff; font-size: 10px; font-weight: 600; border: 2px solid #f9c74f; }
+
+    /* PROFILE SCREEN */
+    .profile-hero { padding: 28px 20px 20px; display: flex; flex-direction: column; align-items: center; border-bottom: 0.5px solid var(--border); }
+    .profile-avatar {
+      width: 72px; height: 72px; border-radius: 50%; background: #1a1a2e;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'DM Serif Display', serif; font-size: 28px; color: #f9c74f; margin-bottom: 12px;
+    }
+    .profile-name { font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .profile-sub { font-size: 13px; color: var(--text-tertiary); margin-bottom: 14px; }
+    .profile-chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .profile-chip {
+      font-size: 12px; padding: 4px 10px; border-radius: 20px;
+      background: var(--bg-secondary); color: var(--text-secondary); border: 0.5px solid var(--border);
+    }
+    .settings-list { padding: 8px 0; }
+    .settings-item {
+      display: flex; align-items: center; padding: 14px 20px;
+      border-bottom: 0.5px solid var(--border); cursor: pointer;
+    }
+    .settings-item:last-child { border-bottom: none; }
+    .settings-item i { font-size: 20px; color: var(--text-tertiary); margin-right: 14px; }
+    .settings-item-label { font-size: 15px; color: var(--text-primary); flex: 1; }
+    .settings-item-value { font-size: 13px; color: var(--text-tertiary); }
+    .toggle {
+      width: 44px; height: 26px; border-radius: 13px; background: #1a1a2e;
+      position: relative; cursor: pointer;
+    }
+    .toggle::after {
+      content: ''; position: absolute; width: 20px; height: 20px;
+      border-radius: 50%; background: #fff; top: 3px; right: 3px; transition: right 0.2s;
+    }
+    .toggle.off { background: var(--bg-secondary); }
+    .toggle.off::after { right: auto; left: 3px; }
+
+    /* REWARD */
+    .reward-scroll { flex: 1; overflow-y: auto; }
+    .reward-scroll::-webkit-scrollbar { display: none; }
+    .reward-body { display: flex; flex-direction: column; align-items: center; padding: 36px 28px 100px; text-align: center; }
+    .reward-ring {
+      width: 96px; height: 96px; border-radius: 50%; background: #e8f5e9; border: 3px solid #43a047;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 38px;
+    }
+    .reward-title { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--text-primary); margin-bottom: 8px; }
+    .reward-sub { font-size: 14px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 28px; }
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; margin-bottom: 28px; }
+    .stat-box { background: var(--bg-secondary); border-radius: 10px; padding: 12px 8px; }
+    .stat-val { font-size: 22px; font-weight: 600; color: var(--text-primary); }
+    .stat-lbl { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+    .r-mrs-wrap { width: 100%; background: var(--bg-secondary); border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: left; }
+    .r-mrs-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+    .r-mrs-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+    .r-mrs-fill { height: 100%; border-radius: 4px; background: #1a1a2e; width: 0%; transition: width 1.2s ease; }
+    .r-mrs-score { font-size: 13px; color: var(--text-secondary); }
+    .garden-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 24px; font-size: 22px; }
+    .nav-hint { font-size: 12px; color: var(--text-tertiary); margin-bottom: 16px; }
+    .reward-bottom { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 20px; padding-bottom: calc(12px + env(safe-area-inset-bottom,0)); background: var(--bg-primary); border-top: 0.5px solid var(--border); }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+<div class="app" id="app">
+
+  <!-- SCREEN: ONBOARDING -->
+  <div class="screen active" id="screen-onboard">
+    <div class="status-bar"><span>9:41</span><span></span></div>
+    <div class="onboard-hero">
+      <div class="logo-mark">
+        <svg viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="14" stroke="#f9c74f" stroke-width="2.5"/>
+          <path d="M14 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="20" cy="26" r="3" fill="#f9c74f"/>
+        </svg>
+      </div>
+      <div class="app-name">Thesis</div>
+      <div class="app-tagline">The news platform that builds your mind, not your dependency.</div>
+      <div class="goal-prompt">What brings you here?</div>
+      <div class="goal-grid">
+        <button class="goal-chip" onclick="selectGoal(this)">
+          <span class="chip-icon"><i class="ti ti-news"></i></span>Understand the news better
+        </button>
+        <button class="goal-chip" onclick="selectGoal(this)">
+          <span class="chip-icon"><i class="ti ti-bulb"></i></span>Challenge my assumptions
+        </button>
+        <button class="goal-chip" onclick="selectGoal(this)">
+          <span class="chip-icon"><i class="ti ti-school"></i></span>Media literacy for class
+        </button>
+        <button class="goal-chip" onclick="selectGoal(this)">
+          <span class="chip-icon"><i class="ti ti-brain"></i></span>Think more independently
+        </button>
+      </div>
+      <button class="btn-primary" id="start-btn" disabled onclick="goTo('screen-feed')">Start reading →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: FEED -->
+  <div class="screen" id="screen-feed">
+    <div class="feed-header">
+      <div class="feed-logo">Thesis</div>
+      <div class="streak-badge"><i class="ti ti-flame" style="font-size:14px"></i> 3 day streak</div>
+    </div>
+    <div class="feed-scroll" id="feed-scroll">
+      <div style="padding:14px 20px 4px;font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px">Today's feed</div>
+      <div class="article-card" onclick="openArticle(0)">
+        <div class="article-source"><div class="source-dot"></div>AP News · News</div>
+        <div class="article-headline">Federal Reserve holds interest rates steady amid inflation concerns</div>
+        <div class="article-meta"><span class="article-tag">News</span><span>4 min read</span></div>
+      </div>
+      <div class="article-card" onclick="openArticle(1)">
+        <div class="article-source"><div class="source-dot"></div>The Atlantic · Opinion</div>
+        <div class="article-headline">Why the Fed's caution is actually reckless for working Americans</div>
+        <div class="article-meta"><span class="article-tag opinion">Opinion</span><span>6 min read</span></div>
+      </div>
+      <div class="article-card" onclick="openArticle(2)">
+        <div class="article-source"><div class="source-dot"></div>Reuters · News</div>
+        <div class="article-headline">Senate bill would require AI content labeling on social platforms</div>
+        <div class="article-meta"><span class="article-tag">News</span><span>3 min read</span></div>
+      </div>
+      <div class="quiz-trigger-bar" onclick="goTo('screen-quiz')" id="quiz-bar" style="display:none">
+        <div class="quiz-ping"></div>
+        <div class="quiz-trigger-text">You've read 3 articles. Time to reflect.</div>
+        <div class="quiz-trigger-cta">Check in →</div>
+      </div>
+      <div class="article-card" onclick="openArticle(3)">
+        <div class="article-source"><div class="source-dot"></div>Politico · News</div>
+        <div class="article-headline">Tech industry lobbying spend hits record $4.2B in 2025</div>
+        <div class="article-meta"><span class="article-tag">News</span><span>5 min read</span></div>
+      </div>
+      <div class="article-card" onclick="openArticle(4)">
+        <div class="article-source"><div class="source-dot"></div>WSJ · Analysis</div>
+        <div class="article-headline">Is AI making us worse at critical thinking? New studies suggest yes</div>
+        <div class="article-meta"><span class="article-tag analysis">Analysis</span><span>7 min read</span></div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-item active" onclick="switchTab('screen-feed', this)"><i class="ti ti-home"></i>Feed</button>
+      <button class="nav-item" onclick="switchTab('screen-progress', this)"><i class="ti ti-chart-bar"></i>Progress</button>
+      <button class="nav-item" onclick="switchTab('screen-profile', this)"><i class="ti ti-user"></i>Profile</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: ARTICLE READER -->
+  <div class="screen" id="screen-article" style="position:relative">
+    <div class="reader-header">
+      <button class="back-btn" onclick="goTo('screen-feed')"><i class="ti ti-arrow-left"></i></button>
+      <div style="font-size:13px;font-weight:500;color:var(--text-secondary)" id="reader-source-top"></div>
+      <div style="margin-left:auto;font-size:12px;color:var(--text-tertiary)" id="reader-time-top"></div>
+    </div>
+    <div class="reader-scroll" id="reader-scroll"></div>
+    <div class="read-done-bar">
+      <button class="btn-primary" onclick="finishReading()">Done reading →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: QUIZ -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-header">
+      <button onclick="goTo('screen-feed')" style="background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:14px;font-family:'DM Sans',sans-serif;">← Back</button>
+      <div class="quiz-progress-track"><div class="quiz-progress-fill" id="quiz-progress"></div></div>
+      <span style="font-size:12px;color:var(--text-tertiary)">1 of 3</span>
+    </div>
+    <div class="quiz-body">
+      <div class="quiz-label">Media literacy check-in</div>
+      <div class="quiz-q">The Atlantic article about the Fed — what type of content was it?</div>
+      <div class="quiz-options">
+        <button class="quiz-option" onclick="answerQuiz(this,false)"><span class="opt-letter">A</span>Breaking news report</button>
+        <button class="quiz-option" onclick="answerQuiz(this,true)"><span class="opt-letter">B</span>Opinion / commentary</button>
+        <button class="quiz-option" onclick="answerQuiz(this,false)"><span class="opt-letter">C</span>Sponsored content</button>
+        <button class="quiz-option" onclick="answerQuiz(this,false)"><span class="opt-letter">D</span>Government press release</button>
+      </div>
+      <div class="quiz-feedback" id="quiz-feedback">
+        Opinion pieces express the writer's viewpoint and are not obligated to represent all perspectives. News reports aim to present verified facts from multiple sources. Recognizing this difference is step one of media literacy.
+      </div>
+    </div>
+    <div class="quiz-footer">
+      <button class="btn-primary" id="quiz-next-btn" style="display:none" onclick="goTo('screen-tp')">Talk it through with Thesis →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: THOUGHT PARTNER -->
+  <div class="screen" id="screen-tp">
+    <div class="tp-header">
+      <div class="tp-avatar">
+        <svg viewBox="0 0 20 20" fill="none">
+          <circle cx="10" cy="10" r="7" stroke="#f9c74f" stroke-width="1.5"/>
+          <path d="M7 10c0-1.65 1.35-3 3-3s3 1.35 3 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="10" cy="13" r="1.5" fill="#f9c74f"/>
+        </svg>
+      </div>
+      <div><div class="tp-name">Thesis</div><div class="tp-role">Your thought partner</div></div>
+      <button onclick="goToReward()" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:13px;color:var(--text-tertiary);font-family:'DM Sans',sans-serif;">Skip →</button>
+    </div>
+    <div class="tp-messages" id="tp-messages"></div>
+    <div class="tp-input-row">
+      <textarea class="tp-input" id="tp-input" placeholder="Type your response..." rows="1" onkeydown="handleTpKey(event)"></textarea>
+      <button class="tp-send" onclick="sendTpMessage()">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M2 8L14 2l-4 6 4 6L2 8z" fill="#fff"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- SCREEN: PROGRESS -->
+  <div class="screen" id="screen-progress">
+    <div class="page-header">Progress</div>
+    <div class="page-scroll">
+      <div class="mrs-card">
+        <div class="mrs-card-label">Media Reasoning Score</div>
+        <div class="mrs-card-score">42</div>
+        <div class="mrs-card-sub">+12 points this week · Growing</div>
+        <div class="mrs-track"><div class="mrs-fill-anim"></div></div>
+      </div>
+
+      <div class="section-label">This week</div>
+      <div class="metric-grid" style="margin-bottom:24px">
+        <div class="metric-card">
+          <div class="metric-val">7</div>
+          <div class="metric-lbl">Articles read</div>
+          <div class="metric-change">↑ 3 from last week</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">3</div>
+          <div class="metric-lbl">Quizzes completed</div>
+          <div class="metric-change">↑ 1 from last week</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">2</div>
+          <div class="metric-lbl">Reflections</div>
+          <div class="metric-change">New this week</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">68%</div>
+          <div class="metric-lbl">Quiz accuracy</div>
+          <div class="metric-change">↑ 12% from last week</div>
+        </div>
+      </div>
+
+      <div class="section-label">Source diversity</div>
+      <div class="bias-row">
+        <div class="bias-item">
+          <div class="bias-item-top"><span class="bias-item-label">Left-leaning sources</span><span class="bias-item-val">28%</span></div>
+          <div class="bias-bar-track"><div class="bias-bar-fill" style="width:28%"></div></div>
+        </div>
+        <div class="bias-item">
+          <div class="bias-item-top"><span class="bias-item-label">Center / nonpartisan</span><span class="bias-item-val">51%</span></div>
+          <div class="bias-bar-track"><div class="bias-bar-fill" style="width:51%"></div></div>
+        </div>
+        <div class="bias-item">
+          <div class="bias-item-top"><span class="bias-item-label">Right-leaning sources</span><span class="bias-item-val">21%</span></div>
+          <div class="bias-bar-track"><div class="bias-bar-fill" style="width:21%"></div></div>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-bottom:12px">7-day streak</div>
+      <div class="streak-row" style="margin-bottom:24px">
+        <div class="streak-day done">M</div>
+        <div class="streak-day done">T</div>
+        <div class="streak-day done">W</div>
+        <div class="streak-day today">TH</div>
+        <div class="streak-day">F</div>
+        <div class="streak-day">S</div>
+        <div class="streak-day">S</div>
+      </div>
+
+      <div class="section-label">Your garden</div>
+      <div style="background:var(--bg-secondary);border-radius:12px;padding:16px;text-align:center;font-size:28px;letter-spacing:4px">🌱 🌱 🌿</div>
+      <div style="font-size:12px;color:var(--text-tertiary);text-align:center;margin-top:8px">Plants grow as you complete reflection sessions</div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="switchTab('screen-feed', this)"><i class="ti ti-home"></i>Feed</button>
+      <button class="nav-item active" onclick="switchTab('screen-progress', this)"><i class="ti ti-chart-bar"></i>Progress</button>
+      <button class="nav-item" onclick="switchTab('screen-profile', this)"><i class="ti ti-user"></i>Profile</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: PROFILE -->
+  <div class="screen" id="screen-profile">
+    <div class="page-header">Profile</div>
+    <div class="page-scroll">
+      <div class="profile-hero">
+        <div class="profile-avatar">A</div>
+        <div class="profile-name">Alex Chen</div>
+        <div class="profile-sub">UCLA Anderson · Media literacy for class</div>
+        <div class="profile-chips">
+          <span class="profile-chip">3-day streak</span>
+          <span class="profile-chip">MRS 42</span>
+          <span class="profile-chip">7 articles read</span>
+        </div>
+      </div>
+
+      <div class="settings-list">
+        <div style="padding:12px 20px 4px;font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px">Preferences</div>
+
+        <div class="settings-item">
+          <i class="ti ti-bell"></i>
+          <span class="settings-item-label">Daily reminders</span>
+          <div class="toggle" onclick="this.classList.toggle('off')"></div>
+        </div>
+        <div class="settings-item">
+          <i class="ti ti-clock"></i>
+          <span class="settings-item-label">Reading time limit</span>
+          <span class="settings-item-value">30 min/day</span>
+        </div>
+        <div class="settings-item">
+          <i class="ti ti-news"></i>
+          <span class="settings-item-label">Topic interests</span>
+          <span class="settings-item-value">Politics, Tech</span>
+        </div>
+        <div class="settings-item">
+          <i class="ti ti-eye"></i>
+          <span class="settings-item-label">Show source bias ratings</span>
+          <div class="toggle" onclick="this.classList.toggle('off')"></div>
+        </div>
+
+        <div style="padding:16px 20px 4px;font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px">Privacy</div>
+
+        <div class="settings-item">
+          <i class="ti ti-lock"></i>
+          <span class="settings-item-label">Data & privacy</span>
+          <i class="ti ti-chevron-right" style="color:var(--text-tertiary);font-size:16px"></i>
+        </div>
+        <div class="settings-item">
+          <i class="ti ti-download"></i>
+          <span class="settings-item-label">Export my data</span>
+          <i class="ti ti-chevron-right" style="color:var(--text-tertiary);font-size:16px"></i>
+        </div>
+        <div class="settings-item">
+          <i class="ti ti-trash"></i>
+          <span class="settings-item-label" style="color:#e53935">Delete account</span>
+        </div>
+
+        <div style="padding:20px 20px 0;font-size:12px;color:var(--text-tertiary);line-height:1.6">
+          Thesis never sells your cognitive data. You own everything you create here.
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-item" onclick="switchTab('screen-feed', this)"><i class="ti ti-home"></i>Feed</button>
+      <button class="nav-item" onclick="switchTab('screen-progress', this)"><i class="ti ti-chart-bar"></i>Progress</button>
+      <button class="nav-item active" onclick="switchTab('screen-profile', this)"><i class="ti ti-user"></i>Profile</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: REWARD -->
+  <div class="screen" id="screen-reward" style="position:relative">
+    <div class="status-bar"><span>9:58</span><span></span></div>
+    <div class="reward-scroll">
+      <div class="reward-body">
+        <div class="reward-ring">🌱</div>
+        <div class="reward-title">Nice thinking.</div>
+        <div class="reward-sub">You completed your first reflection session. Your Media Reasoning Score just moved.</div>
+        <div class="stat-grid">
+          <div class="stat-box"><div class="stat-val">3</div><div class="stat-lbl">Articles read</div></div>
+          <div class="stat-box"><div class="stat-val">1</div><div class="stat-lbl">Quiz passed</div></div>
+          <div class="stat-box"><div class="stat-val">+12</div><div class="stat-lbl">MRS points</div></div>
+        </div>
+        <div class="r-mrs-wrap">
+          <div class="r-mrs-label">Media Reasoning Score</div>
+          <div class="r-mrs-track"><div class="r-mrs-fill" id="mrs-fill"></div></div>
+          <div class="r-mrs-score" id="mrs-score">Calculating...</div>
+        </div>
+        <div style="font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Your garden</div>
+        <div class="garden-row" id="garden">🌱</div>
+        <div class="nav-hint">Come back tomorrow to grow it further.</div>
+      </div>
+    </div>
+    <div class="reward-bottom">
+      <button class="btn-primary" onclick="goTo('screen-feed')">Back to feed</button>
+    </div>
+  </div>
+
+</div><!-- .app -->
+</div><!-- .app-shell -->
+
+<script>
+  var articleCount = 0;
+  var tpTurn = 0;
+  var isSending = false;
+
+  var ARTICLES = [
+    {
+      source: 'AP News', type: 'News', typeClass: '', readTime: '4 min read',
+      headline: 'Federal Reserve holds interest rates steady amid inflation concerns',
+      byline: 'By Christopher Rugaber \u00b7 May 26, 2026',
+      body: '<p>The Federal Reserve held its benchmark interest rate steady on Wednesday, keeping borrowing costs at their highest level in more than two decades as policymakers wait for more evidence that inflation is durably returning to their 2% target.</p><p>The Federal Open Market Committee voted unanimously to maintain the federal funds rate in a target range of 5.25% to 5.5%, a level it has held since last July. The decision matched the expectations of most economists and investors.</p><p>Fed Chair Jerome Powell, speaking at a press conference following the meeting, said the central bank needs \u201cgreater confidence\u201d that inflation is moving sustainably toward 2% before it would be appropriate to cut rates. He described recent inflation data as \u201csomewhat elevated\u201d and said the committee does not expect it will be appropriate to reduce rates until that confidence is achieved.</p>',
+      noteLabel: 'Thesis note \u2014 other perspectives exist',
+      note: 'This AP article reports the Fed\u2019s decision as straightforward news. But economists disagree sharply on whether holding rates is the right call. Some argue prolonged high rates are slowing housing and small business growth unnecessarily. Others say cutting too early risks reigniting inflation. AP presents the Fed\u2019s own framing \u2014 notice whose voice is centered.'
+    },
+    {
+      source: 'The Atlantic', type: 'Opinion', typeClass: 'opinion', readTime: '6 min read',
+      headline: 'Why the Fed\u2019s caution is actually reckless for working Americans',
+      byline: 'By Annie Lowrey \u00b7 May 26, 2026',
+      body: '<p>The Federal Reserve keeps telling us it\u2019s being careful. Careful about inflation. Careful about the timing of rate cuts. Careful not to move too soon. But there\u2019s another word for what the Fed is doing: reckless \u2014 reckless toward the millions of Americans whose economic lives depend on affordable credit.</p><p>When the Fed holds rates at 5.5%, it\u2019s not some abstract macroeconomic variable. It\u2019s the difference between a first-time homebuyer who can afford a mortgage and one who can\u2019t. It\u2019s the small restaurant owner who can\u2019t refinance the loan she took out during COVID. It\u2019s the student-debt holder watching interest compound while she waits for relief that hasn\u2019t come.</p><p>The Fed\u2019s obsession with its 2% inflation target is a policy choice, not a law of physics. Other central banks have been more willing to accept 2.5% or even 3% inflation in exchange for labor market strength. The European Central Bank has cut rates twice this year. The Bank of Canada has cut three times. The Fed stands alone in its rigidity \u2014 and working Americans are paying the price.</p>',
+      noteLabel: 'Thesis note \u2014 this is opinion, not news',
+      note: 'Notice the difference in tone from the AP article. Lowrey is arguing a position \u2014 that the Fed\u2019s policy harms working people. She uses rhetorical choices like \u201creckless\u201d and vivid examples to persuade. That doesn\u2019t mean she\u2019s wrong, but her job here is to make a case, not report all sides. What would a defender of the Fed\u2019s position say?'
+    },
+    {
+      source: 'Reuters', type: 'News', typeClass: '', readTime: '3 min read',
+      headline: 'Senate bill would require AI content labeling on social platforms',
+      byline: 'By Makena Kelly \u00b7 May 26, 2026',
+      body: '<p>A bipartisan group of senators introduced legislation on Tuesday that would require social media platforms to clearly label content generated or significantly altered by artificial intelligence, the latest congressional attempt to regulate AI-produced media ahead of future elections.</p><p>The bill, called the Protect Elections from Deceptive AI Act, would mandate that any political advertisement using AI-generated images, video, or audio disclose that fact prominently. Violations could result in fines of up to $500,000 per incident.</p><p>The legislation has support from both Republican and Democratic co-sponsors, an unusual alignment in an otherwise gridlocked Congress. Tech industry groups have largely opposed mandatory labeling requirements, arguing that definitions of \u201cAI-generated content\u201d are technically ambiguous and that the compliance burden would fall disproportionately on smaller platforms.</p>',
+      noteLabel: 'Thesis note \u2014 who\u2019s missing from this story?',
+      note: 'Reuters quotes senators and tech industry groups \u2014 the two sides most invested in the legislation. But this story affects content creators, journalists, academics, and everyday users too. Notice that \u201cbipartisan\u201d is used as a positive signal, but bipartisan doesn\u2019t automatically mean correct. What questions would you want answered before forming a view?'
+    },
+    {
+      source: 'Politico', type: 'News', typeClass: '', readTime: '5 min read',
+      headline: 'Tech industry lobbying spend hits record $4.2B in 2025',
+      byline: 'By Emily Birnbaum \u00b7 May 26, 2026',
+      body: '<p>Technology companies spent a record $4.2 billion on lobbying and political contributions in 2025, a 34% increase over the prior year, according to a new analysis by the nonpartisan OpenSecrets research group. The surge comes as Congress considers sweeping legislation on artificial intelligence, data privacy, and antitrust enforcement.</p><p>Meta, Google, Amazon, Apple, and Microsoft collectively accounted for nearly $900 million of the total spend. But the biggest growth came from AI-focused companies, many of which had minimal Washington presence just two years ago. OpenAI\u2019s lobbying expenditures grew more than 800% year-over-year.</p><p>Advocates for tech regulation say the spending is distorting the legislative process. \u201cYou cannot understand why Congress keeps failing to pass meaningful AI accountability legislation without understanding who is in those rooms,\u201d said one policy researcher at a consumer advocacy group, who asked not to be named to avoid industry retaliation.</p>',
+      noteLabel: 'Thesis note \u2014 follow the money',
+      note: 'This article documents lobbying spending, which is verifiable public data. But notice how the framing shifts when the unnamed source calls it \u201cdistorting.\u201d Lobbying is legal. The question of whether it corrupts policy or reflects legitimate stakeholder interests is genuinely contested. OpenSecrets is described as \u201cnonpartisan\u201d \u2014 do you know what that means, and would you verify it?'
+    },
+    {
+      source: 'WSJ', type: 'Analysis', typeClass: 'analysis', readTime: '7 min read',
+      headline: 'Is AI making us worse at critical thinking? New studies suggest yes',
+      byline: 'By Rachel Feintzeig \u00b7 May 26, 2026',
+      body: '<p>A growing body of research suggests that heavy reliance on AI tools for writing, research, and decision-making may be eroding the cognitive skills those tools are meant to support \u2014 a phenomenon some researchers are calling \u201ccognitive offloading.\u201d</p><p>In one study published last month in the journal Nature Human Behaviour, participants who used an AI assistant to complete reasoning tasks performed significantly worse on identical tasks two weeks later when the AI was unavailable. A control group that completed the original tasks without AI assistance showed no such decline.</p><p>The findings echo older research on GPS navigation and memory: when we outsource a cognitive function to a tool, the underlying mental muscle can atrophy. \u201cThe question isn\u2019t whether AI is useful \u2014 it clearly is,\u201d said Dr. Tomas Chamorro-Premuzic, a psychologist at University College London. \u201cThe question is whether we\u2019re using it in ways that make us more capable or less.\u201d</p><p>Not all researchers are convinced the evidence is strong enough to draw firm conclusions. Some argue that AI frees up cognitive bandwidth for higher-order thinking, and that studies measuring short-term skill retention miss that larger benefit.</p>',
+      noteLabel: 'Thesis note \u2014 analysis vs. news vs. opinion',
+      note: 'This piece is labeled \u201canalysis\u201d \u2014 a hybrid form. It presents real research but frames it around a thesis. Notice it includes a dissenting view at the end, which is a hallmark of good analysis. Compare that to the Atlantic opinion piece, which didn\u2019t. What does that structural difference tell you about each piece\u2019s intent?'
+    }
+  ];
+
+  // Keyword-matched responses. Each entry: { keywords: [...], reply: "..." }
+  // The app picks the first match, or falls back to a default rotation.
+  var KEYWORD_RESPONSES = [
+    {
+      keywords: ['less', 'trust less', 'less trustworthy', 'not trust', 'unreliable', 'credible', 'less credible'],
+      reply: "Trusting it less is one instinct \u2014 but that might be giving news a pass it doesn\u2019t deserve. A news article that buries its framing assumptions can be more misleading than an op-ed that declares its thesis upfront. The real question isn\u2019t opinion vs. news \u2014 it\u2019s: what evidence is the author using, and are they being transparent about their reasoning? What would make you trust an opinion piece more?"
+    },
+    {
+      keywords: ['differently', 'different', 'context', 'filter', 'lens', 'frame', 'aware'],
+      reply: "That\u2019s a sharp distinction. Reading it differently \u2014 knowing the author is arguing a position \u2014 is exactly the right move. The label \u2018opinion\u2019 is a transparency signal, not a credibility penalty. Some of the most well-reasoned media criticism lives in opinion format. So: what would you actually look for in an opinion piece to decide whether it\u2019s worth taking seriously?"
+    },
+    {
+      keywords: ['bias', 'biased', 'slant', 'agenda', 'spin', 'one-sided', 'partisan', 'left', 'right', 'liberal', 'conservative'],
+      reply: "Bias is real \u2014 but it\u2019s worth asking whether opinion and news have different kinds of bias rather than different amounts. An op-ed declares its bias upfront. A news article can embed bias invisibly through source selection, word choice, or what it leaves out. Which do you think is harder to catch? And does knowing a bias exists change how useful the article is to you?"
+    },
+    {
+      keywords: ['fact', 'facts', 'evidence', 'data', 'research', 'studies', 'prove', 'proven', 'accurate', 'true', 'false'],
+      reply: "Facts matter \u2014 but facts don\u2019t speak for themselves. The same unemployment number can headline a \u201ceconomy surging\u201d story or a \u201cworkers left behind\u201d story depending on framing. The Atlantic piece used real Fed data but selected which facts to foreground. That\u2019s not lying \u2014 it\u2019s arguing. What\u2019s one specific claim from that article you\u2019d want to verify before accepting it?"
+    },
+    {
+      keywords: ['opinion', 'op-ed', 'commentary', 'perspective', 'viewpoint', 'argument', 'author', 'writer', 'journalist'],
+      reply: "Right \u2014 and the label does real work. When you know you\u2019re reading an argument, you can engage with it on those terms: do I buy the logic, is the evidence cherry-picked, what\u2019s the strongest counterpoint? The problem is when opinion dresses up as news, or when news embeds argument invisibly. Can you think of an example where you couldn\u2019t tell which one you were reading?"
+    },
+    {
+      keywords: ['fed', 'federal reserve', 'interest rate', 'inflation', 'economy', 'monetary', 'powell', 'rates'],
+      reply: "The Fed framing is a good case study. AP reported the decision \u2014 The Atlantic argued it was harmful. Both used accurate facts. Neither is \u2018wrong\u2019 in the simple sense. But one is claiming to show you what happened, and the other is telling you what it means. Do you think most readers make that distinction when they scroll past headlines? What helps you make it?"
+    },
+    {
+      keywords: ['media', 'news', 'platform', 'social media', 'tiktok', 'twitter', 'x', 'instagram', 'scroll', 'feed', 'algorithm'],
+      reply: "The platform shapes the reading before you even open the article. Algorithms surface content based on what you\u2019ve engaged with before \u2014 which means your feed is already pre-filtered toward views you\u2019re likely to agree with. That\u2019s not a conspiracy; it\u2019s an optimization. The question is: what would you have to do differently to get a feed that genuinely challenges your assumptions?"
+    },
+    {
+      keywords: ['agree', 'agreed', 'yes', 'correct', 'right', 'exactly', 'totally', 'absolutely', 'same', 'think so too'],
+      reply: "It\u2019s worth sitting with that agreement for a second. When we agree quickly, we sometimes skip the step of asking \u2018what\u2019s the strongest argument against this?\u2019 That\u2019s not cynicism \u2014 it\u2019s how you stress-test a position. What would someone who disagreed with you on this say, and does their argument have any merit?"
+    },
+    {
+      keywords: ['disagree', 'disagree', 'wrong', 'no', 'not sure', 'don\'t think', 'doubt', 'skeptical', 'question'],
+      reply: "Skepticism is a great starting point \u2014 the question is what you do with it. Disagreeing with a source is only useful if you can say why: is the evidence weak, is the logic flawed, is a key perspective missing? What specifically made you push back on this, and what would change your mind?"
+    },
+    {
+      keywords: ['don\'t know', 'not sure', 'unsure', 'confused', 'hard to say', 'good question', 'complicated', 'complex', 'unclear'],
+      reply: "That uncertainty is actually the most honest place to start. The goal isn\u2019t to have an immediate confident take \u2014 it\u2019s to know what questions you\u2019d need answered before forming one. So: what would you need to read or know to feel more confident about this topic? That question itself tells you a lot about your gaps."
+    },
+    {
+      keywords: ['why', 'how', 'what does', 'explain', 'mean', 'what is', 'define', 'understand'],
+      reply: "Good instinct to ask why before accepting the framing. Most media literacy problems happen when readers absorb conclusions without asking what reasoning got us there. The next layer is: who benefits from you believing this? That\u2019s not a conspiracy question \u2014 it\u2019s just asking whose interests the argument serves. Does that change how you read this piece?"
+    },
+    {
+      keywords: ['source', 'sources', 'reuters', 'ap', 'atlantic', 'wsj', 'politico', 'outlet', 'publication', 'newspaper'],
+      reply: "Source credibility matters \u2014 but it\u2019s only one layer. Even the most credible outlets make editorial choices about what to cover, whose voices to include, and what angle to lead with. A story from Reuters and a story from The Atlantic on the same event can both be accurate and tell completely different stories. What\u2019s your current mental model for how you decide which sources to trust?"
+    }
+  ];
+
+  // Fallback responses used when no keyword matches, cycling in order
+  var FALLBACK_RESPONSES = [
+    "That\u2019s worth unpacking. Every strong reader develops a habit of asking \u2018what\u2019s this piece trying to do?\u2019 \u2014 inform, persuade, provoke, sell? Once you know the intent, you read differently. Looking at the articles you just read: which one was most transparent about what it was trying to do?",
+    "You\u2019re developing real media literacy instincts here. The habit of separating the claim from the source, then stress-testing the reasoning, is exactly what distinguishes an informed reader from a passive one. What\u2019s one topic where you think you\u2019ve been accepting one source\u2019s framing without questioning it?",
+    "Here\u2019s a reframe worth trying: instead of asking \u2018is this true?\u2019, ask \u2018what would I need to believe for this to be true?\u2019 That surfaces the hidden assumptions faster. What assumption is buried in the piece you found most persuasive today?",
+    "The most important media literacy skill isn\u2019t detecting lies \u2014 it\u2019s noticing what\u2019s absent. Every article is also defined by what it didn\u2019t include, whose voice it didn\u2019t seek, what context it left out. Which voice was missing from the stories you read today?"
+  ];
+
+  var fallbackTurn = 0;
+
+  function selectGoal(el) {
+    document.querySelectorAll('.goal-chip').forEach(function(c) { c.classList.remove('selected'); });
+    el.classList.add('selected');
+    document.getElementById('start-btn').disabled = false;
+  }
+
+  function goTo(screenId) {
+    document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById(screenId).classList.add('active');
+    if (screenId === 'screen-tp' && document.getElementById('tp-messages').children.length === 0) {
+      addMessage('ai', "Good catch on the Atlantic piece \u2014 it was clearly labelled as opinion, but many readers miss that. Here\u2019s what I want to ask you: does the label \u2018opinion\u2019 mean you should trust it less, or just differently?");
+    }
+  }
+
+  function switchTab(screenId, btn) {
+    goTo(screenId);
+    document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+    document.querySelectorAll('.nav-item').forEach(function(n) {
+      if (n.getAttribute('onclick') && n.getAttribute('onclick').indexOf(screenId) !== -1) {
+        n.classList.add('active');
+      }
+    });
+  }
+
+  function openArticle(idx) {
+    var a = ARTICLES[idx];
+    document.getElementById('reader-source-top').textContent = a.source;
+    document.getElementById('reader-time-top').textContent = a.readTime;
+    document.getElementById('reader-scroll').innerHTML =
+      '<div class="reader-source"><div class="source-dot"></div>' + a.source + '</div>' +
+      '<div class="reader-headline">' + a.headline + '</div>' +
+      '<div class="reader-byline"><span class="reader-tag ' + a.typeClass + '">' + a.type + '</span><span>' + a.byline + '</span></div>' +
+      '<div class="reader-divider"></div>' +
+      '<div class="reader-body">' + a.body + '</div>' +
+      '<div class="thesis-note"><div class="thesis-note-label">' + a.noteLabel + '</div>' + a.note + '</div>';
+    document.getElementById('reader-scroll').scrollTop = 0;
+    goTo('screen-article');
+  }
+
+  function finishReading() {
+    articleCount++;
+    if (articleCount >= 3) {
+      document.getElementById('quiz-bar').style.display = 'flex';
+    }
+    goTo('screen-feed');
+    if (articleCount >= 3) {
+      setTimeout(function() {
+        document.getElementById('feed-scroll').scrollTo({ top: 160, behavior: 'smooth' });
+      }, 100);
+    }
+  }
+
+  function answerQuiz(el, correct) {
+    if (document.querySelector('.quiz-option.correct, .quiz-option.wrong')) return;
+    document.querySelectorAll('.quiz-option').forEach(function(o) { o.style.pointerEvents = 'none'; });
+    if (correct) {
+      el.classList.add('correct');
+    } else {
+      el.classList.add('wrong');
+      document.querySelectorAll('.quiz-option')[1].classList.add('reveal');
+    }
+    document.getElementById('quiz-feedback').classList.add('show');
+    document.getElementById('quiz-next-btn').style.display = 'block';
+    document.getElementById('quiz-progress').style.width = '66%';
+  }
+
+  function addMessage(role, text) {
+    var msgs = document.getElementById('tp-messages');
+    var div = document.createElement('div');
+    div.className = 'msg ' + role;
+    var bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.textContent = text;
+    div.appendChild(bubble);
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function addTyping() {
+    var msgs = document.getElementById('tp-messages');
+    var div = document.createElement('div');
+    div.className = 'msg ai'; div.id = 'typing-indicator';
+    div.innerHTML = '<div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function removeTyping() {
+    var el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  function handleTpKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendTpMessage(); }
+  }
+
+  function pickResponse(text) {
+    var lower = text.toLowerCase();
+    for (var i = 0; i < KEYWORD_RESPONSES.length; i++) {
+      var entry = KEYWORD_RESPONSES[i];
+      for (var j = 0; j < entry.keywords.length; j++) {
+        if (lower.indexOf(entry.keywords[j]) !== -1) {
+          return entry.reply;
+        }
+      }
+    }
+    // No match — use fallback rotation
+    var reply = FALLBACK_RESPONSES[fallbackTurn % FALLBACK_RESPONSES.length];
+    fallbackTurn++;
+    return reply;
+  }
+
+  function sendTpMessage() {
+    if (isSending) return;
+    var input = document.getElementById('tp-input');
+    var text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    isSending = true;
+    addMessage('user', text);
+    addTyping();
+    var delay = 1200 + Math.random() * 800;
+    setTimeout(function() {
+      removeTyping();
+      var reply = pickResponse(text);
+      tpTurn++;
+      addMessage('ai', reply);
+      isSending = false;
+      if (tpTurn >= 2) {
+        setTimeout(function() {
+          var msgs = document.getElementById('tp-messages');
+          var wrap = document.createElement('div');
+          wrap.style.padding = '4px 0';
+          var btn = document.createElement('button');
+          btn.className = 'btn-primary';
+          btn.textContent = 'See my progress \u2192';
+          btn.onclick = goToReward;
+          wrap.appendChild(btn);
+          msgs.appendChild(wrap);
+          msgs.scrollTop = msgs.scrollHeight;
+        }, 600);
+      }
+    }, delay);
+  }
+
+  function goToReward() {
+    goTo('screen-reward');
+    setTimeout(function() {
+      document.getElementById('mrs-fill').style.width = '42%';
+      document.getElementById('mrs-score').textContent = '42 / 100 \u2014 growing';
+      document.getElementById('garden').innerHTML = '🌱 🌱';
+    }, 400);
+  }
+</script>
+</body>
+</html>
