@@ -508,23 +508,16 @@
     <div class="quiz-header">
       <button onclick="goTo('screen-feed')" style="background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:14px;font-family:'DM Sans',sans-serif;">← Back</button>
       <div class="quiz-progress-track"><div class="quiz-progress-fill" id="quiz-progress"></div></div>
-      <span style="font-size:12px;color:var(--text-tertiary)">1 of 3</span>
+      <span style="font-size:12px;color:var(--text-tertiary)" id="quiz-counter">1 of 3</span>
     </div>
-    <div class="quiz-body">
+    <div class="quiz-body" id="quiz-body">
       <div class="quiz-label">Media literacy check-in</div>
-      <div class="quiz-q">The Atlantic article about the Fed — what type of content was it?</div>
-      <div class="quiz-options">
-        <button class="quiz-option" onclick="answerQuiz(this,false)"><span class="opt-letter">A</span>Breaking news report</button>
-        <button class="quiz-option" onclick="answerQuiz(this,true)"><span class="opt-letter">B</span>Opinion / commentary</button>
-        <button class="quiz-option" onclick="answerQuiz(this,false)"><span class="opt-letter">C</span>Sponsored content</button>
-        <button class="quiz-option" onclick="answerQuiz(this,false)"><span class="opt-letter">D</span>Government press release</button>
-      </div>
-      <div class="quiz-feedback" id="quiz-feedback">
-        Opinion pieces express the writer's viewpoint and are not obligated to represent all perspectives. News reports aim to present verified facts from multiple sources. Recognizing this difference is step one of media literacy.
-      </div>
+      <div class="quiz-q" id="quiz-q"></div>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div class="quiz-feedback" id="quiz-feedback"></div>
     </div>
     <div class="quiz-footer">
-      <button class="btn-primary" id="quiz-next-btn" style="display:none" onclick="goTo('screen-tp')">Talk it through with Thesis →</button>
+      <button class="btn-primary" id="quiz-next-btn" style="display:none" onclick="advanceQuiz()">Next →</button>
     </div>
   </div>
 
@@ -842,6 +835,10 @@
   function goTo(screenId) {
     document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
     document.getElementById(screenId).classList.add('active');
+    if (screenId === 'screen-quiz') {
+      currentQuizQ = 0;
+      loadQuizQuestion(0);
+    }
     if (screenId === 'screen-tp' && document.getElementById('tp-messages').children.length === 0) {
       if (quizAnsweredCorrectly) {
         addMessage('ai', "Good catch on the Atlantic piece \u2014 it was clearly labelled as opinion, but many readers miss that. Here\u2019s what I want to ask you: does the label \u2018opinion\u2019 mean you should trust it less, or just differently?");
@@ -890,6 +887,50 @@
   }
 
   var quizAnsweredCorrectly = false;
+  var currentQuizQ = 0;
+
+  var QUIZ_QUESTIONS = [
+    {
+      q: "The Atlantic article about the Fed — what type of content was it?",
+      options: ["Breaking news report", "Opinion / commentary", "Sponsored content", "Government press release"],
+      correct: 1,
+      feedback: "Opinion pieces express the writer's viewpoint and aren't obligated to represent all perspectives. News reports aim to present verified facts from multiple sources. Recognizing this difference is step one of media literacy."
+    },
+    {
+      q: "The AP News article on the Federal Reserve quoted mostly Fed officials. What does this tell you?",
+      options: ["The article is biased against the Fed", "The article is completely objective", "The story centers the Fed's own framing of events", "AP News is a government publication"],
+      correct: 2,
+      feedback: "Even straight news can embed a perspective through source selection. When a story quotes mainly the institution being covered, it tends to reproduce that institution's framing — not because the reporter is dishonest, but because access shapes coverage."
+    },
+    {
+      q: "The Reuters article said the AI labeling bill had 'bipartisan support.' What should a critical reader do with that information?",
+      options: ["Accept it as proof the bill is good policy", "Assume it means both parties agree on everything", "Note it as one signal, but still evaluate the bill's merits independently", "Dismiss the bill because bipartisan bills are always compromises"],
+      correct: 2,
+      feedback: "'Bipartisan' is often used as a credibility shortcut in news writing. But bipartisan agreement tells you about political consensus, not policy quality. Critical readers treat it as one data point — not a verdict."
+    }
+  ];
+
+  function loadQuizQuestion(idx) {
+    var q = QUIZ_QUESTIONS[idx];
+    var total = QUIZ_QUESTIONS.length;
+    document.getElementById('quiz-counter').textContent = (idx + 1) + ' of ' + total;
+    document.getElementById('quiz-progress').style.width = ((idx / total) * 100) + '%';
+    document.getElementById('quiz-q').textContent = q.q;
+    document.getElementById('quiz-feedback').textContent = q.feedback;
+    document.getElementById('quiz-feedback').classList.remove('show');
+    document.getElementById('quiz-next-btn').style.display = 'none';
+
+    var letters = ['A','B','C','D'];
+    var optionsEl = document.getElementById('quiz-options');
+    optionsEl.innerHTML = '';
+    q.options.forEach(function(opt, i) {
+      var btn = document.createElement('button');
+      btn.className = 'quiz-option';
+      btn.innerHTML = '<span class="opt-letter">' + letters[i] + '</span>' + opt;
+      btn.onclick = function() { answerQuiz(btn, i === q.correct); };
+      optionsEl.appendChild(btn);
+    });
+  }
 
   function answerQuiz(el, correct) {
     if (document.querySelector('.quiz-option.correct, .quiz-option.wrong')) return;
@@ -899,12 +940,30 @@
       el.classList.add('correct');
     } else {
       el.classList.add('wrong');
-      document.querySelectorAll('.quiz-option')[1].classList.add('reveal');
+      // highlight the correct answer
+      var opts = document.querySelectorAll('.quiz-option');
+      opts[QUIZ_QUESTIONS[currentQuizQ].correct].classList.add('reveal');
     }
     document.getElementById('quiz-feedback').classList.add('show');
-    document.getElementById('quiz-next-btn').style.display = 'block';
-    document.getElementById('quiz-next-btn').textContent = correct ? 'Talk it through with Thesis \u2192' : 'Keep going \u2192';
-    document.getElementById('quiz-progress').style.width = '66%';
+    var isLast = currentQuizQ >= QUIZ_QUESTIONS.length - 1;
+    var btn = document.getElementById('quiz-next-btn');
+    btn.style.display = 'block';
+    if (isLast) {
+      btn.textContent = correct ? 'Talk it through with Thesis \u2192' : 'Keep going \u2192';
+    } else {
+      btn.textContent = 'Next question \u2192';
+    }
+    document.getElementById('quiz-progress').style.width = (((currentQuizQ + 1) / QUIZ_QUESTIONS.length) * 100) + '%';
+  }
+
+  function advanceQuiz() {
+    var isLast = currentQuizQ >= QUIZ_QUESTIONS.length - 1;
+    if (isLast) {
+      goTo('screen-tp');
+    } else {
+      currentQuizQ++;
+      loadQuizQuestion(currentQuizQ);
+    }
   }
 
   function addMessage(role, text) {
