@@ -896,6 +896,7 @@
     }
     document.getElementById('quiz-feedback').classList.add('show');
     document.getElementById('quiz-next-btn').style.display = 'block';
+    document.getElementById('quiz-next-btn').textContent = correct ? 'Talk it through with Thesis \u2192' : 'Keep going \u2192';
     document.getElementById('quiz-progress').style.width = '66%';
   }
 
